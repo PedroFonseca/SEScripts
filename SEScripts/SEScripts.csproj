@@ -66,6 +66,7 @@
     <Compile Include="Helpers\GetComponentsHelper.cs" />
     <Compile Include="Helpers\LcdOutputHelper.cs" />
     <Compile Include="Helpers\TerminalBlockHelper.cs" />
+    <Compile Include="Modules\AutoBuild.cs" />
     <Compile Include="Modules\AutoMove.cs" />
     <Compile Include="Modules\ShowContainerContents.cs" />
     <Compile Include="Skeleton.cs" />
