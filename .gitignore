@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/SEScripts/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+/SEScripts/obj/Debug
+/.vs/SEScripts/v14/.suo
