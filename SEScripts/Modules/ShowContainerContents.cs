@@ -30,9 +30,9 @@ public class ShowContainerContents : Skeleton
     //=================================================================================
 
     // Name of the container to show the contents
-    public string ContainerName = "Cargo Container";
+    public string ContainerName = "Small Cargo Container 1 ";
     // Name of the lcd to display the information's where you want to display the contents of destiny container (set text to public)
-    public string LcdName = "Lcd";
+    public string LcdName = "S.HERM LCD Airlock";
     // The header of text to be shown in the lcd screens (should identify what you are displaying)
     public string Header = "Contents in Cargo Container";
     // Insert here how much of each component you would like to have in destiny container (to show a percentage)
@@ -308,12 +308,13 @@ public class ShowContainerContents : Skeleton
 
         public static Dictionary<string, ItemContentAdvanced> GetItemsInInventory(IMyInventory inventory)
         {
-            var items = inventory.GetItems();
+            List<MyInventoryItem> items = new List<MyInventoryItem>();
+            inventory.GetItems(items);
             var itemsDic = new Dictionary<string, ItemContentAdvanced>();
             for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
-                var name = item.Content.SubtypeName;
+                var name = item.Type.SubtypeId;
                 var quantity = (int)(item.Amount.RawValue / 1000000);
                 if (!itemsDic.ContainsKey(name))
                 {

@@ -42,12 +42,13 @@ public static class CargoHelper
 
     public static Dictionary<string, ItemContentAdvanced> GetItemsInInventory(IMyInventory inventory)
     {
-        var items = inventory.GetItems();
+        List<MyInventoryItem> items = new List<MyInventoryItem>();
+        inventory.GetItems(items);
         var itemsDic = new Dictionary<string, ItemContentAdvanced>();
         for (var i = 0; i < items.Count; i++)
         {
             var item = items[i];
-            var name = item.Content.SubtypeName;
+            var name = item.Type.SubtypeId;
             var quantity = (int)(item.Amount.RawValue / 1000000);
             if (!itemsDic.ContainsKey(name))
             {

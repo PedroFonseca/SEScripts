@@ -66,9 +66,9 @@ public class AutoBuild : Skeleton
         };
 
 
-    public void Main(string argument)
+    public void Main(string argument, UpdateType updateSource)
     {
-        // Execute script to automatically move components up to a certain cota to one connected container
+        // Execute script to automatically move components up to a certain quota to one connected container
         //var autoMoveResult = AutoMoveComponents.Run(GridTerminalSystem, AutoMoveComponentsToWelderConfig);
 
         ////Get the lcd(s) to show status and errors named debugger (if it doesn't exist we can't show errors/exceptions).

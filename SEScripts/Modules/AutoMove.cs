@@ -62,9 +62,9 @@ public class AutoMove : Skeleton
         }
     };
 
-    public void Main(string argument)
+    public void Main(string argument, UpdateType updateSource)
     {
-        // Execute script to automatically move components up to a certain cota to one connected container
+        // Execute script to automatically move components up to a certain quota to one connected container
         var autoMoveResult = AutoMoveComponents.Run(GridTerminalSystem, AutoMoveComponentsToWelderConfig);
 
         //Get the lcd(s) to show status and errors named debugger (if it doesn't exist we can't show errors/exceptions).
@@ -138,7 +138,7 @@ public class AutoMove : Skeleton
                 if (quantityToMove > 0)
                 {
                     var destinyIndex = itemsInDestinyInventory.ContainsKey(component.Key) ? itemsInDestinyInventory[component.Key].Index :
-                                        destinyInventory.GetItems().Count;
+                                        destinyInventory..GetItems().Count;
                     debugMessage += "Moving " + quantityToMove + " of " + component.Key + "from pos " + itemsInOriginInventory[component.Key].Index + " to " + destinyIndex + "\n";
                     originInventory.TransferItemTo(destinyInventory,
                         itemsInOriginInventory[component.Key].Index,
@@ -152,7 +152,8 @@ public class AutoMove : Skeleton
 
         public static Dictionary<string, ItemContent> GetItemsInInventory(IMyInventory inventory)
         {
-            var items = inventory.GetItems();
+            List<MyInventoryItem> items = new List<MyInventoryItem>();
+            inventory.GetItems(items);
             var itemsDic = new Dictionary<string, ItemContent>();
             for (var i = 0; i < items.Count; i++)
             {

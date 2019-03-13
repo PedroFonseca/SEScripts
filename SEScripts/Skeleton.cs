@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Sandbox.ModAPI;
 
 public abstract class Skeleton : IMyGridProgram
@@ -83,6 +83,11 @@ public abstract class Skeleton : IMyGridProgram
         {
             throw new NotImplementedException();
         }
+    }
+
+    public void Main(string argument, Sandbox.ModAPI.Ingame.UpdateType updateSource)
+    {
+        throw new NotImplementedException();
     }
 
     public void Save()
