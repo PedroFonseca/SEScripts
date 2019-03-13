@@ -15,69 +15,72 @@ using SpaceEngineers.Game.ModAPI.Ingame;
 using VRageMath;
 using VRage.Game.ModAPI.Ingame;
 
-public static class CargoHelper
+namespace SEScripts.Helpers
 {
-    public static Dictionary<string, ItemContent> GetItemsInInventories(List<IMyTerminalBlock> inventoryBlocks, int inventoryIndex = 0)
+    public static class CargoHelper
     {
-        if (inventoryBlocks.Count == 0)
-            return new Dictionary<string, ItemContent>();
-
-        var result = new Dictionary<string, ItemContent>();
-        foreach (var inventory in inventoryBlocks)
+        public static Dictionary<string, ItemContent> GetItemsInInventories(List<IMyTerminalBlock> inventoryBlocks, int inventoryIndex = 0)
         {
-            foreach (var item in GetItemsInInventory(inventory.GetInventory(inventoryIndex)))
+            if (inventoryBlocks.Count == 0)
+                return new Dictionary<string, ItemContent>();
+
+            var result = new Dictionary<string, ItemContent>();
+            foreach (var inventory in inventoryBlocks)
             {
-                if (!result.ContainsKey(item.Key))
+                foreach (var item in GetItemsInInventory(inventory.GetInventory(inventoryIndex)))
                 {
-                    result.Add(item.Key, item.Value as ItemContent);
+                    if (!result.ContainsKey(item.Key))
+                    {
+                        result.Add(item.Key, item.Value as ItemContent);
+                    }
+                    else
+                    {
+                        result[item.Key].Quantity += item.Value.Quantity;
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static Dictionary<string, ItemContentAdvanced> GetItemsInInventory(IMyInventory inventory)
+        {
+            List<MyInventoryItem> items = new List<MyInventoryItem>();
+            inventory.GetItems(items);
+            var itemsDic = new Dictionary<string, ItemContentAdvanced>();
+            for (var i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                var name = item.Type.SubtypeId;
+                var quantity = (int)(item.Amount.RawValue / 1000000);
+                if (!itemsDic.ContainsKey(name))
+                {
+                    //Add item do return structure
+                    itemsDic.Add(name, new ItemContentAdvanced
+                    {
+                        ItemName = name,
+                        Quantity = (int)(item.Amount.RawValue / 1000000),
+                        Index = i
+                    });
                 }
                 else
                 {
-                    result[item.Key].Quantity += item.Value.Quantity;
+                    //There are multiple stacks of the item, so we should stack them together
+                    inventory.TransferItemTo(inventory, i, itemsDic[name].Index, true);
+                    itemsDic[name].Quantity += quantity;
                 }
             }
+            return itemsDic;
         }
-        return result;
-    }
 
-    public static Dictionary<string, ItemContentAdvanced> GetItemsInInventory(IMyInventory inventory)
-    {
-        List<MyInventoryItem> items = new List<MyInventoryItem>();
-        inventory.GetItems(items);
-        var itemsDic = new Dictionary<string, ItemContentAdvanced>();
-        for (var i = 0; i < items.Count; i++)
+        public class ItemContent
         {
-            var item = items[i];
-            var name = item.Type.SubtypeId;
-            var quantity = (int)(item.Amount.RawValue / 1000000);
-            if (!itemsDic.ContainsKey(name))
-            {
-                //Add item do return structure
-                itemsDic.Add(name, new ItemContentAdvanced
-                {
-                    ItemName = name,
-                    Quantity = (int)(item.Amount.RawValue / 1000000),
-                    Index = i
-                });
-            }
-            else
-            {
-                //There are multiple stacks of the item, so we should stack them together
-                inventory.TransferItemTo(inventory, i, itemsDic[name].Index, true);
-                itemsDic[name].Quantity += quantity;
-            }
+            public string ItemName { get; set; }
+            public int Quantity { get; set; }
         }
-        return itemsDic;
-    }
 
-    public class ItemContent
-    {
-        public string ItemName { get; set; }
-        public int Quantity { get; set; }
-    }
-
-    public class ItemContentAdvanced : ItemContent
-    {
-        public int Index { get; set; }
+        public class ItemContentAdvanced : ItemContent
+        {
+            public int Index { get; set; }
+        }
     }
 }

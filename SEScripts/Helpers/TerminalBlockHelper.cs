@@ -15,29 +15,32 @@ using SpaceEngineers.Game.ModAPI.Ingame;
 using VRageMath;
 using VRage.Game.ModAPI.Ingame;
 
-public class TerminalBlockHelper
+namespace SEScripts.Helpers
 {
-    public static IMyTerminalBlock GetBlockByName(List<IMyTerminalBlock> blocks, string blockName)
+    public class TerminalBlockHelper
     {
-        foreach (var block in blocks)
+        public static IMyTerminalBlock GetBlockByName(List<IMyTerminalBlock> blocks, string blockName)
         {
-            if (block.CustomName == blockName)
+            foreach (var block in blocks)
             {
-                return block;
+                if (block.CustomName == blockName)
+                {
+                    return block;
+                }
             }
+            return null;
         }
-        return null;
-    }
 
-    public static void TurnOn(IMyTerminalBlock block)
-    {
-        var action = block.GetActionWithName("OnOff_On");
-        action.Apply(block);
-    }
+        public static void TurnOn(IMyTerminalBlock block)
+        {
+            var action = block.GetActionWithName("OnOff_On");
+            action.Apply(block);
+        }
 
-    public static void TurnOff(IMyTerminalBlock block)
-    {
-        var action = block.GetActionWithName("OnOff_Off");
-        action.Apply(block);
+        public static void TurnOff(IMyTerminalBlock block)
+        {
+            var action = block.GetActionWithName("OnOff_Off");
+            action.Apply(block);
+        }
     }
 }

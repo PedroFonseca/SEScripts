@@ -62,8 +62,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Grids\SHERM.cs" />
     <Compile Include="Helpers\CargoHelper.cs" />
-    <Compile Include="Helpers\GetComponentsHelper.cs" />
+    <Compile Include="Helpers\GridBlocksHelper.cs" />
     <Compile Include="Helpers\LcdOutputHelper.cs" />
     <Compile Include="Helpers\TerminalBlockHelper.cs" />
     <Compile Include="Modules\AutoBuild.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="Skeleton.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

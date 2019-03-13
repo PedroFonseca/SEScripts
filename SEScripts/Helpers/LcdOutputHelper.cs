@@ -15,101 +15,104 @@ using SpaceEngineers.Game.ModAPI.Ingame;
 using VRageMath;
 using VRage.Game.ModAPI.Ingame;
 
-public static class LcdOutputHelper
+namespace SEScripts.Helpers
 {
-    public static void ShowResult(IMyTextPanel lcd, string message)
+    public static class LcdOutputHelper
     {
-        ShowMessageOnLcd(lcd, new LcdMessage(message, Color.White));
-    }
-
-    public static void ShowResult(List<IMyTextPanel> lcds, string message)
-    {
-        if (lcds == null || lcds.Count == 0)
-            return;
-        var msg = new LcdMessage(message, Color.White);
-        foreach (var lcd in lcds)
+        public static void ShowResult(IMyTextPanel lcd, string message)
         {
-            ShowMessageOnLcd(lcd, msg);
+            ShowMessageOnLcd(lcd, new LcdMessage(message, Color.White));
         }
-    }
 
-    public static void ShowResultWithProgress(List<IMyTextPanel> lcds, string message)
-    {
-        if (lcds == null || lcds.Count == 0)
-            return;
-
-        message = "=================================\n" + message + "\n  " + getTimmerChar();
-
-        var msg = new LcdMessage(message, Color.White);
-        foreach (var lcd in lcds)
+        public static void ShowResult(List<IMyTextPanel> lcds, string message)
         {
-            ShowMessageOnLcd(lcd, msg);
+            if (lcds == null || lcds.Count == 0)
+                return;
+            var msg = new LcdMessage(message, Color.White);
+            foreach (var lcd in lcds)
+            {
+                ShowMessageOnLcd(lcd, msg);
+            }
         }
-    }
 
-    // Timmer is used to show something different every iteration
-    static int timmer = 0;
-    private static string getTimmerChar()
-    {
-        // Move timmer
-        timmer++;
-
-        switch (timmer)
+        public static void ShowResultWithProgress(List<IMyTextPanel> lcds, string message)
         {
-            case 1: return "\\";
-            case 2: return "|";
-            case 3: return "/";
-            default: timmer = 0; return "-";
+            if (lcds == null || lcds.Count == 0)
+                return;
+
+            message = "=================================\n" + message + "\n  " + getTimmerChar();
+
+            var msg = new LcdMessage(message, Color.White);
+            foreach (var lcd in lcds)
+            {
+                ShowMessageOnLcd(lcd, msg);
+            }
         }
-    }
 
-    public static void ShowMessageOnLcd(IMyTextPanel lcd, LcdMessage message)
-    {
-        if (lcd == null) return;
-
-        lcd.WritePublicText(message.Text);
-        lcd.ShowPublicTextOnScreen();
-        lcd.SetValue<Color>("FontColor", message.FontColor);
-        lcd.SetValue<Color>("BackgroundColor", message.BackgroundColor);
-        lcd.SetValueFloat("FontSize", message.FontSize);
-    }
-
-    // Doesn't work
-    public static void ShowMessagesOnLcd(IMyTextPanel lcd, List<LcdMessage> messages)
-    {
-        if (lcd == null) return;
-
-        foreach (var message in messages)
+        // Timmer is used to show something different every iteration
+        static int timmer = 0;
+        private static string getTimmerChar()
         {
+            // Move timmer
+            timmer++;
+
+            switch (timmer)
+            {
+                case 1: return "\\";
+                case 2: return "|";
+                case 3: return "/";
+                default: timmer = 0; return "-";
+            }
+        }
+
+        public static void ShowMessageOnLcd(IMyTextPanel lcd, LcdMessage message)
+        {
+            if (lcd == null) return;
+
+            lcd.WritePublicText(message.Text);
+            lcd.ShowPublicTextOnScreen();
             lcd.SetValue<Color>("FontColor", message.FontColor);
             lcd.SetValue<Color>("BackgroundColor", message.BackgroundColor);
             lcd.SetValueFloat("FontSize", message.FontSize);
-            lcd.WritePublicText(message.Text, true);
-        }
-        lcd.ShowPublicTextOnScreen();
-    }
-
-    public struct LcdMessage
-    {
-        public string Text { get; set; }
-        public Color FontColor { get; set; }
-        public Color BackgroundColor { get; set; }
-        public float FontSize { get; set; }
-
-        public LcdMessage(string text)
-        {
-            Text = text;
-            FontColor = Color.White;
-            BackgroundColor = Color.Black;
-            FontSize = 1.1f;
         }
 
-        public LcdMessage(string text, Color fontColor)
+        // Doesn't work
+        public static void ShowMessagesOnLcd(IMyTextPanel lcd, List<LcdMessage> messages)
         {
-            Text = text;
-            FontColor = fontColor;
-            BackgroundColor = Color.Black;
-            FontSize = 1.1f;
+            if (lcd == null) return;
+
+            foreach (var message in messages)
+            {
+                lcd.SetValue<Color>("FontColor", message.FontColor);
+                lcd.SetValue<Color>("BackgroundColor", message.BackgroundColor);
+                lcd.SetValueFloat("FontSize", message.FontSize);
+                lcd.WritePublicText(message.Text, true);
+            }
+            lcd.ShowPublicTextOnScreen();
+        }
+
+        public struct LcdMessage
+        {
+            public string Text { get; set; }
+            public Color FontColor { get; set; }
+            public Color BackgroundColor { get; set; }
+            public float FontSize { get; set; }
+
+            public LcdMessage(string text)
+            {
+                Text = text;
+                FontColor = Color.White;
+                BackgroundColor = Color.Black;
+                FontSize = 1.1f;
+            }
+
+            public LcdMessage(string text, Color fontColor)
+            {
+                Text = text;
+                FontColor = fontColor;
+                BackgroundColor = Color.Black;
+                FontSize = 1.1f;
+            }
         }
     }
 }
