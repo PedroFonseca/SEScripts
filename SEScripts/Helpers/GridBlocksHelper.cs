@@ -20,17 +20,24 @@ namespace SEScripts.Helpers
     public class GridBlocksHelper
     {
         public string Prefix { get; private set; }
+        public List<string> ExceptionList { get; private set; }
         private IMyGridTerminalSystem GTS { get; set; }
         public GridBlocksHelper() { }
-        private GridBlocksHelper(IMyGridTerminalSystem gts, string prefix)
+        private GridBlocksHelper(IMyGridTerminalSystem gts, string prefix, List<string> exceptionList)
         {
             Prefix = prefix;
+            ExceptionList = exceptionList;
             GTS = gts;
         }
 
-        public static GridBlocksHelper Get(IMyGridTerminalSystem gts, string prefix)
+        public static GridBlocksHelper Prefixed(IMyGridTerminalSystem gts, string prefix)
         {
-            return new GridBlocksHelper(gts, prefix);
+            return new GridBlocksHelper(gts, prefix, null);
+        }
+
+        public static GridBlocksHelper WithExceptions(IMyGridTerminalSystem gts, List<string> exceptionList)
+        {
+            return new GridBlocksHelper(gts, string.Empty, exceptionList);
         }
 
         private bool NameStartsWithPrefix(IMyTerminalBlock block)
@@ -45,6 +52,21 @@ namespace SEScripts.Helpers
             if (string.IsNullOrEmpty(Prefix))
                 return true;
             return block.CustomName.Equals(Prefix) && block.IsFunctional;
+        }
+
+        private bool NameIsNotException(IMyTerminalBlock block)
+        {
+            if (ExceptionList == null || ExceptionList.Count == 0)
+                return true;
+
+            foreach (var name in ExceptionList)
+            {
+                if (block.CustomName.Equals(name) && block.IsFunctional)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private List<T> ConvertToListOf<T>(List<IMyTerminalBlock> list) where T : class
@@ -121,6 +143,13 @@ namespace SEScripts.Helpers
         {
             var aux = new List<IMyTerminalBlock>();
             GTS.GetBlocksOfType<IMyCargoContainer>(aux, NameStartsWithPrefix);
+            return aux;
+        }
+
+        public List<IMyTerminalBlock> GetCargoContainersWithExceptions()
+        {
+            var aux = new List<IMyTerminalBlock>();
+            GTS.GetBlocksOfType<IMyCargoContainer>(aux, NameIsNotException);
             return aux;
         }
 

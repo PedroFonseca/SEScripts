@@ -92,7 +92,7 @@ public class ShowContainerContents
     public string StringifyContainerContent(string containerName, Dictionary<string, int> componentDesiredQuantities)
     {
         // Get containers 
-        var containers = GridBlocksHelper.Get(GTS, containerName).GetCargoContainers();
+        var containers = GridBlocksHelper.Prefixed(GTS, containerName).GetCargoContainers();
         if (containers.Count == 0)
             return "Container not found.";
 
@@ -133,7 +133,7 @@ public class ShowContainerContents
     public void PrintResultsOnLcd(string lcdName, string results)
     {
         //Get the lcd(s)
-        var lcds = GridBlocksHelper.Get(GTS, lcdName).GetLcdsPrefixed();
+        var lcds = GridBlocksHelper.Prefixed(GTS, lcdName).GetLcdsPrefixed();
         if (lcds.Count == 0)
             throw new Exception(string.Format("No lcd found with name starting with {0}", lcdName));
 

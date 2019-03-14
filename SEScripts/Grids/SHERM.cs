@@ -13,10 +13,6 @@ namespace SEScripts.Grids
 {
     public class SHERM : Skeleton
     {
-        // Name of the lcd to display the information's where you want to display the contents of destiny container (set text to public)
-        public string LcdName = "S.HERM LCD Airlock";
-        // The header of text to be shown in the lcd screens (should identify what you are displaying)
-        public string Header = "Contents in Cargo Container";
         // Insert here how much of each component you would like to have in destiny container (to show a percentage)
         // Tips: This can be null if you don't want a percentage. 
         public Dictionary<string, int> ComponentDesiredQuantities = new Dictionary<string, int>
@@ -46,10 +42,22 @@ namespace SEScripts.Grids
 
         public void Main(string argument, UpdateType updateSource)
         {
+            var debug = AutoMove.Get(GridTerminalSystem).MoveAll(ComponentDesiredQuantities.Keys.ToList(), "S.HERM Cargo Components Container", new List<string>());
+
             // Show contents of components container
             // LcdName: S.HERM LCD Airlock
             // ContainerName: S.HERM Cargo Components Container
             ShowContainerContents.Get(GridTerminalSystem).PrintContents("S.HERM LCD Airlock", "S.HERM Cargo Components Container", ComponentDesiredQuantities);
+
+
+            //Debug messages
+            var lcds = GridBlocksHelper.Prefixed(GridTerminalSystem, "S.HERM LCD Airlock debug").GetLcdsPrefixed();
+            if (lcds.Count == 0)
+                throw new Exception(string.Format("No lcd found with name starting with {0}", "S.HERM LCD Airlock debug"));
+
+            // Print the message on the lcd(s)
+            LcdOutputHelper.ShowMessageOnLcd(lcds[0], new LcdOutputHelper.LcdMessage("Debug:\n" + debug));
+            
         }
 
         public class ShowContainerContents
@@ -74,7 +82,7 @@ namespace SEScripts.Grids
             public string StringifyContainerContent(string containerName, Dictionary<string, int> componentDesiredQuantities)
             {
                 // Get containers 
-                var containers = GridBlocksHelper.Get(GTS, containerName).GetCargoContainers();
+                var containers = GridBlocksHelper.Prefixed(GTS, containerName).GetCargoContainers();
                 if (containers.Count == 0)
                     return "Container not found.";
 
@@ -115,7 +123,7 @@ namespace SEScripts.Grids
             public void PrintResultsOnLcd(string lcdName, string results)
             {
                 //Get the lcd(s)
-                var lcds = GridBlocksHelper.Get(GTS, lcdName).GetLcdsPrefixed();
+                var lcds = GridBlocksHelper.Prefixed(GTS, lcdName).GetLcdsPrefixed();
                 if (lcds.Count == 0)
                     throw new Exception(string.Format("No lcd found with name starting with {0}", lcdName));
 
@@ -293,17 +301,24 @@ namespace SEScripts.Grids
         public class GridBlocksHelper
         {
             public string Prefix { get; private set; }
+            public List<string> ExceptionList { get; private set; }
             private IMyGridTerminalSystem GTS { get; set; }
             public GridBlocksHelper() { }
-            private GridBlocksHelper(IMyGridTerminalSystem gts, string prefix)
+            private GridBlocksHelper(IMyGridTerminalSystem gts, string prefix, List<string> exceptionList)
             {
                 Prefix = prefix;
+                ExceptionList = exceptionList;
                 GTS = gts;
             }
 
-            public static GridBlocksHelper Get(IMyGridTerminalSystem gts, string prefix)
+            public static GridBlocksHelper Prefixed(IMyGridTerminalSystem gts, string prefix)
             {
-                return new GridBlocksHelper(gts, prefix);
+                return new GridBlocksHelper(gts, prefix, null);
+            }
+
+            public static GridBlocksHelper WithExceptions(IMyGridTerminalSystem gts, List<string> exceptionList)
+            {
+                return new GridBlocksHelper(gts, string.Empty, exceptionList);
             }
 
             private bool NameStartsWithPrefix(IMyTerminalBlock block)
@@ -318,6 +333,21 @@ namespace SEScripts.Grids
                 if (string.IsNullOrEmpty(Prefix))
                     return true;
                 return block.CustomName.Equals(Prefix) && block.IsFunctional;
+            }
+
+            private bool NameIsNotException(IMyTerminalBlock block)
+            {
+                if (ExceptionList == null || ExceptionList.Count == 0)
+                    return true;
+
+                foreach (var name in ExceptionList)
+                {
+                    if (block.CustomName.Equals(name) && block.IsFunctional)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             private List<T> ConvertToListOf<T>(List<IMyTerminalBlock> list) where T : class
@@ -397,6 +427,13 @@ namespace SEScripts.Grids
                 return aux;
             }
 
+            public List<IMyTerminalBlock> GetCargoContainersWithException()
+            {
+                var aux = new List<IMyTerminalBlock>();
+                GTS.GetBlocksOfType<IMyCargoContainer>(aux, NameIsNotException);
+                return aux;
+            }
+
             public List<IMyTerminalBlock> GetAssemblers()
             {
                 var aux = new List<IMyTerminalBlock>();
@@ -409,6 +446,69 @@ namespace SEScripts.Grids
                 var aux = new List<IMyTerminalBlock>();
                 GTS.GetBlocksOfType<IMyRefinery>(aux, NameStartsWithPrefix);
                 return aux;
+            }
+        }
+
+        public class AutoMove
+        {
+            private IMyGridTerminalSystem GTS { get; set; }
+            public AutoMove() { }
+            private AutoMove(IMyGridTerminalSystem gts)
+            {
+                GTS = gts;
+            }
+
+            public static AutoMove Get(IMyGridTerminalSystem gts)
+            {
+                return new AutoMove(gts);
+            }
+
+            public string MoveAll(List<string> components, string destinyContainerName, List<string> exceptionList)
+            {
+                //====================================== Move components ==========================
+                // Move components from one container into another
+                var helper = GridBlocksHelper.WithExceptions(GTS, exceptionList);
+                var origin = helper.GetCargoContainersWithException().Concat(
+                                helper.GetAssemblers()).ToList();
+                if (origin.Count == 0)
+                    return string.Format("Could not find any container not in exceptions.");
+
+                var destiny = GridBlocksHelper.Prefixed(GTS, destinyContainerName).GetCargoContainers();
+                if (destiny.Count > 1)
+                    return string.Format("Multiple containers were found with name {0}. Make sure you have only one.", destinyContainerName);
+                else if (destiny.Count == 0)
+                {
+                    return string.Format("Container with name {0} not found on grid.", destinyContainerName);
+                }
+                
+                // Get inventories of both origin and destiny containers
+                var originInventories = origin.Select(t => t.GetInventory(0)).ToList();
+                var destinyInventory = destiny[0].GetInventory(0);
+
+                // Get items on destiny container inventory
+                var itemsInDestinyInventory = CargoHelper.GetItemsInInventory(destinyInventory);
+
+                var debugMessage = string.Empty;
+                foreach (var originInventory in originInventories)
+                {
+                    var itemsInOriginInventory = CargoHelper.GetItemsInInventory(originInventory);
+                    // Move components into destiny container
+                    foreach (var component in components)
+                    {
+                        if (!itemsInOriginInventory.ContainsKey(component))
+                        {
+                            continue;
+                        }
+                        var destinyIndex = itemsInDestinyInventory.ContainsKey(component) ? itemsInDestinyInventory[component].Index : destinyInventory.ItemCount;
+                        //debugMessage += "Moving " + component + "from " + origin[0].CustomName + " to " + destinyIndex + "\n";
+                        originInventory.TransferItemTo(destinyInventory,
+                                itemsInOriginInventory[component].Index,
+                                destinyIndex,
+                                true);
+                    }
+                }
+
+                return debugMessage;
             }
         }
     }
