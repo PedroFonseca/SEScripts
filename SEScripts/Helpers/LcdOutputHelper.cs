@@ -35,12 +35,12 @@ namespace SEScripts.Helpers
             }
         }
 
-        public static void ShowResultWithProgress(List<IMyTextPanel> lcds, string message)
+        public static void ShowResultWithProgress(List<IMyTextPanel> lcds, string message, string title = "=================================")
         {
             if (lcds == null || lcds.Count == 0)
                 return;
 
-            message = "=================================\n" + message + "\n  " + getTimmerChar();
+            message = title + "\n" + message + "\n  " + getTimmerChar();
 
             var msg = new LcdMessage(message, Color.White);
             foreach (var lcd in lcds)

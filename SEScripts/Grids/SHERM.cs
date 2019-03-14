@@ -40,15 +40,24 @@ namespace SEScripts.Grids
             { "Thrust",               0 }
         };
 
+        public List<string> ores = new List<string>() { "Stone", "Gravel", "Iron", "Nickel", "Magnesium", "Silicon", "Cobalt", "Gold", "Silver", "Uranium", "Platinum", "Ice" };
+
         public void Main(string argument, UpdateType updateSource)
         {
-            var debug = AutoMove.Get(GridTerminalSystem).MoveAll(ComponentDesiredQuantities.Keys.ToList(), "S.HERM Cargo Components Container", new List<string>());
+            var debug = string.Empty;
+            AutoMove.Get(GridTerminalSystem).MoveAll(ComponentDesiredQuantities.Keys.ToList(), "S.HERM Cargo Components Container", new List<string>());
+            AutoMove.Get(GridTerminalSystem).MoveAll(ores, "S.HERM Cargo Ore / Ingot Container", new List<string>() { });
+            AutoMove.Get(GridTerminalSystem).MoveAll(new List<string>() { "Ice" }, "S.HERM Cargo Ice Container", new List<string>() { });
 
             // Show contents of components container
-            // LcdName: S.HERM LCD Airlock
+            // LcdName: S.HERM LCD Components
             // ContainerName: S.HERM Cargo Components Container
-            ShowContainerContents.Get(GridTerminalSystem).PrintContents("S.HERM LCD Airlock", "S.HERM Cargo Components Container", ComponentDesiredQuantities);
+            ShowContainerContents.Get(GridTerminalSystem).PrintContents("S.HERM LCD Components", "S.HERM Cargo Components Container", "=== S.HERM Cargo Components ===");
 
+            // Show contents of components container
+            // LcdName: S.HERM LCD Ores
+            // ContainerName: S.HERM Cargo Ore / Ingot Container
+            ShowContainerContents.Get(GridTerminalSystem).PrintContents("S.HERM LCD Ores", "S.HERM Cargo Ore / Ingot Container", "=== S.HERM Cargo Ore / Ingot ===");
 
             //Debug messages
             var lcds = GridBlocksHelper.Prefixed(GridTerminalSystem, "S.HERM LCD Airlock debug").GetLcdsPrefixed();
@@ -74,9 +83,32 @@ namespace SEScripts.Grids
                 return new ShowContainerContents(gts);
             }
 
+            public void PrintContents(string lcdName, string containerName, string title)
+            {
+                PrintResultsOnLcd(lcdName, StringifyContainerContent(containerName), title);
+            }
+
             public void PrintContents(string lcdName, string containerName, Dictionary<string, int> componentDesiredQuantities)
             {
                 PrintResultsOnLcd(lcdName, StringifyContainerContent(containerName, componentDesiredQuantities));
+            }
+            public string StringifyContainerContent(string containerName)
+            {
+                // Get containers 
+                var containers = GridBlocksHelper.Prefixed(GTS, containerName).GetCargoContainers();
+                if (containers.Count == 0)
+                    return "Container not found.";
+
+                // Get items in inventories
+                var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(containers);
+
+                // Build a string with the items
+                var itemsString = string.Empty;
+                foreach (var item in itemsInDestinyInventory.Values)
+                {
+                    itemsString += item.ItemName + " - " + item.Quantity + "\n";
+                }
+                return itemsString;
             }
 
             public string StringifyContainerContent(string containerName, Dictionary<string, int> componentDesiredQuantities)
@@ -120,7 +152,7 @@ namespace SEScripts.Grids
                 return (int)Math.Round((decimal)quantity / desired * 100);
             }
 
-            public void PrintResultsOnLcd(string lcdName, string results)
+            public void PrintResultsOnLcd(string lcdName, string results, string title="=================================")
             {
                 //Get the lcd(s)
                 var lcds = GridBlocksHelper.Prefixed(GTS, lcdName).GetLcdsPrefixed();
@@ -128,7 +160,7 @@ namespace SEScripts.Grids
                     throw new Exception(string.Format("No lcd found with name starting with {0}", lcdName));
 
                 // Print the message on the lcd(s)
-                LcdOutputHelper.ShowResultWithProgress(lcds, results);
+                LcdOutputHelper.ShowResultWithProgress(lcds, results, title);
             }
         }
 
@@ -217,12 +249,12 @@ namespace SEScripts.Grids
                 }
             }
 
-            public static void ShowResultWithProgress(List<IMyTextPanel> lcds, string message)
+            public static void ShowResultWithProgress(List<IMyTextPanel> lcds, string message, string title= "=================================")
             {
                 if (lcds == null || lcds.Count == 0)
                     return;
 
-                message = "=================================\n" + message + "\n  " + getTimmerChar();
+                message = title + "\n" + message + "\n  " + getTimmerChar();
 
                 var msg = new LcdMessage(message, Color.White);
                 foreach (var lcd in lcds)
@@ -467,9 +499,7 @@ namespace SEScripts.Grids
             {
                 //====================================== Move components ==========================
                 // Move components from one container into another
-                var helper = GridBlocksHelper.WithExceptions(GTS, exceptionList);
-                var origin = helper.GetCargoContainersWithException().Concat(
-                                helper.GetAssemblers()).ToList();
+                var origin = GridBlocksHelper.WithExceptions(GTS, exceptionList).GetCargoContainersWithException();
                 if (origin.Count == 0)
                     return string.Format("Could not find any container not in exceptions.");
 

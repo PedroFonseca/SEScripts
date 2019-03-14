@@ -39,9 +39,7 @@ public class AutoMove
     {
         //====================================== Move components ==========================
         // Move components from one container into another
-        var helper = GridBlocksHelper.WithExceptions(GTS, exceptionList);
-        var origin = helper.GetCargoContainersWithExceptions().Concat(
-                        helper.GetAssemblers()).ToList();
+        var origin = GridBlocksHelper.WithExceptions(GTS, exceptionList).GetCargoContainersWithException();
         if (origin.Count == 0)
             return string.Format("Could not find any container not in exceptions.");
 

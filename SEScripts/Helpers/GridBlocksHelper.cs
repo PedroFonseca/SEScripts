@@ -146,7 +146,7 @@ namespace SEScripts.Helpers
             return aux;
         }
 
-        public List<IMyTerminalBlock> GetCargoContainersWithExceptions()
+        public List<IMyTerminalBlock> GetCargoContainersWithException()
         {
             var aux = new List<IMyTerminalBlock>();
             GTS.GetBlocksOfType<IMyCargoContainer>(aux, NameIsNotException);

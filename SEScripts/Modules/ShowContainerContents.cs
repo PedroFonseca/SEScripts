@@ -84,9 +84,32 @@ public class ShowContainerContents
         return new ShowContainerContents(gts);
     }
 
+    public void PrintContents(string lcdName, string containerName, string title)
+    {
+        PrintResultsOnLcd(lcdName, StringifyContainerContent(containerName), title);
+    }
+
     public void PrintContents(string lcdName, string containerName, Dictionary<string, int> componentDesiredQuantities)
     {
         PrintResultsOnLcd(lcdName, StringifyContainerContent(containerName, componentDesiredQuantities));
+    }
+    public string StringifyContainerContent(string containerName)
+    {
+        // Get containers 
+        var containers = GridBlocksHelper.Prefixed(GTS, containerName).GetCargoContainers();
+        if (containers.Count == 0)
+            return "Container not found.";
+
+        // Get items in inventories
+        var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(containers);
+
+        // Build a string with the items
+        var itemsString = string.Empty;
+        foreach (var item in itemsInDestinyInventory.Values)
+        {
+            itemsString += item.ItemName + " - " + item.Quantity + "\n";
+        }
+        return itemsString;
     }
 
     public string StringifyContainerContent(string containerName, Dictionary<string, int> componentDesiredQuantities)
@@ -130,7 +153,7 @@ public class ShowContainerContents
         return (int)Math.Round((decimal)quantity / desired * 100);
     }
 
-    public void PrintResultsOnLcd(string lcdName, string results)
+    public void PrintResultsOnLcd(string lcdName, string results, string title = "=================================")
     {
         //Get the lcd(s)
         var lcds = GridBlocksHelper.Prefixed(GTS, lcdName).GetLcdsPrefixed();
@@ -138,6 +161,6 @@ public class ShowContainerContents
             throw new Exception(string.Format("No lcd found with name starting with {0}", lcdName));
 
         // Print the message on the lcd(s)
-        LcdOutputHelper.ShowResultWithProgress(lcds, results);
+        LcdOutputHelper.ShowResultWithProgress(lcds, results, title);
     }
 }
