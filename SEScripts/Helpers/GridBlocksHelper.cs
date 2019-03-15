@@ -30,6 +30,11 @@ namespace SEScripts.Helpers
             GTS = gts;
         }
 
+        public static GridBlocksHelper Get(IMyGridTerminalSystem gts)
+        {
+            return new GridBlocksHelper(gts, string.Empty, null);
+        }
+
         public static GridBlocksHelper Prefixed(IMyGridTerminalSystem gts, string prefix)
         {
             return new GridBlocksHelper(gts, prefix, null);
@@ -164,6 +169,13 @@ namespace SEScripts.Helpers
         {
             var aux = new List<IMyTerminalBlock>();
             GTS.GetBlocksOfType<IMyRefinery>(aux, NameStartsWithPrefix);
+            return aux;
+        }
+
+        public List<IMyTerminalBlock> GetGroupBlocks(string groupName)
+        {
+            var aux = new List<IMyTerminalBlock>();
+            GTS.GetBlockGroupWithName(groupName).GetBlocks(aux);
             return aux;
         }
     }

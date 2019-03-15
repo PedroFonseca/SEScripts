@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 //Add reference to steam\SteamApps\common\SpaceEngineers\bin64\VRage.Math.dll
@@ -89,6 +90,11 @@ public class ShowContainerContents
         PrintResultsOnLcd(lcdName, StringifyContainerContent(containerName), title);
     }
 
+    public void PrintGroupContents(string lcdName, string title, string groupName)
+    {
+        PrintResultsOnLcd(lcdName, StringifyGroupContent(groupName), title);
+    }
+
     public void PrintContents(string lcdName, string containerName, Dictionary<string, int> componentDesiredQuantities)
     {
         PrintResultsOnLcd(lcdName, StringifyContainerContent(containerName, componentDesiredQuantities));
@@ -100,8 +106,22 @@ public class ShowContainerContents
         if (containers.Count == 0)
             return "Container not found.";
 
+        return StringifyContainerContent(containers);
+    }
+
+    public string StringifyGroupContent(string groupName)
+    {
+        var inventories = GridBlocksHelper.Get(GTS).GetGroupBlocks(groupName).Where(t => t.HasInventory).ToList();
+        if (inventories.Count == 0)
+            return string.Format("There are no blocks in group {0} with inventory.", groupName);
+
+        return StringifyContainerContent(inventories);
+    }
+
+    public string StringifyContainerContent(List<IMyTerminalBlock> inventories)
+    {
         // Get items in inventories
-        var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(containers);
+        var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(inventories);
 
         // Build a string with the items
         var itemsString = string.Empty;
