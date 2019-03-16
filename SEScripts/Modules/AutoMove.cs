@@ -35,10 +35,9 @@ public class AutoMove
         return new AutoMove(gts);
     }
 
+    // Move components from grid to container (except from exception container list)
     public string MoveAll(List<string> components, string destinyContainerName, List<string> exceptionList)
     {
-        //====================================== Move components ==========================
-        // Move components from one container into another
         var origin = GridBlocksHelper.WithExceptions(GTS, exceptionList).GetCargoContainersWithException();
         if (origin.Count == 0)
             return string.Format("Could not find any container not in exceptions.");
@@ -75,6 +74,65 @@ public class AutoMove
                         itemsInOriginInventory[component].Index,
                         destinyIndex,
                         true);
+            }
+        }
+
+        return debugMessage;
+    }
+
+    public string MoveToQuota(string originContainerName, string destinyContainerName, Dictionary<string, int> componentDesiredQuantities)
+    {
+        //====================================== Move components ==========================
+        // Move components from one container into another
+        var origin = GridBlocksHelper.Prefixed(GTS, originContainerName).GetCargoContainers();
+        if (origin.Count == 0)
+            return string.Format("Could not find any container with the name {0}.", originContainerName);
+        else if (origin.Count > 1)
+            return string.Format("Multiple containers were found with name {0}. Make sure you have only one.", originContainerName);
+
+
+        var destiny = GridBlocksHelper.Prefixed(GTS, destinyContainerName).GetCargoContainers();
+        if (destiny.Count > 1)
+            return string.Format("Multiple containers were found with name {0}. Make sure you have only one.", destinyContainerName);
+        else if (destiny.Count == 0)
+        {
+            return string.Format("Container with name {0} not found on grid.", destinyContainerName);
+        }
+
+        // Get inventories of both origin and destiny containers
+        var originInventory = origin[0].GetInventory(0);
+        var destinyInventory = destiny[0].GetInventory(0);
+
+        // Get items on destiny container inventory
+        var itemsInOriginInventory = CargoHelper.GetItemsInInventory(originInventory);
+        var itemsInDestinyInventory = CargoHelper.GetItemsInInventory(destinyInventory);
+
+        // Move components into destiny container
+        var debugMessage = string.Empty;
+        foreach (var component in componentDesiredQuantities)
+        {
+            if (component.Value <= 0 || !itemsInOriginInventory.ContainsKey(component.Key))
+                continue;
+
+            // Calculate the quantity to move
+            var quantityToMove = component.Value;
+            if (itemsInDestinyInventory.ContainsKey(component.Key))
+            {
+                quantityToMove = component.Value - itemsInDestinyInventory[component.Key].Quantity;
+            }
+
+            // Move items
+            if (quantityToMove > 0)
+            {
+                var a = (VRage.MyFixedPoint)quantityToMove;
+                var destinyIndex = itemsInDestinyInventory.ContainsKey(component.Key) ? itemsInDestinyInventory[component.Key].Index :
+                                    destinyInventory.ItemCount;
+                debugMessage += "Moving " + quantityToMove + " of " + component.Key + "from pos " + itemsInOriginInventory[component.Key].Index + " to " + destinyIndex + "\n";
+                originInventory.TransferItemTo(destinyInventory,
+                    itemsInOriginInventory[component.Key].Index,
+                    destinyIndex,
+                    true,
+                    quantityToMove);
             }
         }
 

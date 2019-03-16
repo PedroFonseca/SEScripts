@@ -15,25 +15,25 @@ namespace SEScripts.Grids
     {
         // Insert here how much of each component you would like to have in destiny container (to show a percentage)
         // Tips: This can be null if you don't want a percentage. 
-        public Dictionary<string, int> ComponentDesiredQuantities = new Dictionary<string, int>
+        public Dictionary<string, int> Welder1DesiredQuantities = new Dictionary<string, int>
         {
-            { "SteelPlate",       10000 },
-            { "InteriorPlate",    10000 },
-            { "Motor",             2500 },
-            { "Construction",      5000 },
-            { "SmallTube",         5000 },
-            { "LargeTube",         2500 },
-            { "Computer",          5000 },
-            { "MetalGrid",         1000 },
-            { "BulletproofGlass",  1000 },
-            { "Display",           2000 },
-            { "Girder",            1000 },
+            { "SteelPlate",         500 },
+            { "InteriorPlate",      500 },
+            { "Motor",              150 },
+            { "Construction",       500 },
+            { "SmallTube",          500 },
+            { "LargeTube",          100 },
+            { "Computer",           500 },
+            { "MetalGrid",          100 },
+            { "BulletproofGlass",   100 },
+            { "Display",            100 },
+            { "Girder",             100 },
             { "Detector",           100 },
             { "Explosives",           0 },
             { "GravityGenerator",     0 },
-            { "Medical",            100 },
+            { "Medical",              0 },
             { "PowerCell",            0 },
-            { "RadioCommunication", 500 },
+            { "RadioCommunication",   0 },
             { "Reactor",              0 },
             { "SolarCell",            0 },
             { "SuperConductor",       0 },
@@ -45,19 +45,20 @@ namespace SEScripts.Grids
         public void Main(string argument, UpdateType updateSource)
         {
             var debug = string.Empty;
-            AutoMove.Get(GridTerminalSystem).MoveAll(ComponentDesiredQuantities.Keys.ToList(), "S.HERM Cargo Components Container", new List<string>());
+            //AutoMove.Get(GridTerminalSystem).MoveAll(Welder1DesiredQuantities.Keys.ToList(), "S.HERM Cargo Components Container", new List<string>{ "Welder 1 Cargo Container" });
             AutoMove.Get(GridTerminalSystem).MoveAll(ores, "S.HERM Cargo Ore / Ingot Container", new List<string>() { });
             AutoMove.Get(GridTerminalSystem).MoveAll(new List<string>() { "Ice" }, "S.HERM Cargo Ice Container", new List<string>() { });
+            // Fill welder contents
+            debug = AutoMove.Get(GridTerminalSystem).MoveToQuota("S.HERM Cargo Components Container", "Welder 1 Cargo Container", Welder1DesiredQuantities);
 
             // Show contents of components container
-            // LcdName: S.HERM LCD Components
-            // ContainerName: S.HERM Cargo Components Container
             ShowContainerContents.Get(GridTerminalSystem).PrintContents("S.HERM LCD Components", "S.HERM Cargo Components Container", "=== S.HERM Cargo Components ===");
 
-            // Show contents of components container
-            // LcdName: S.HERM LCD Ores
-            // ContainerName: S.HERM Cargo Ore / Ingot Container
+            // Show contents of ores container
             ShowContainerContents.Get(GridTerminalSystem).PrintContents("S.HERM LCD Ores", "S.HERM Cargo Ore / Ingot Container", "=== S.HERM Cargo Ore / Ingot ===");
+
+            // Show contents of welder1 container
+            ShowContainerContents.Get(GridTerminalSystem).PrintContents("S.HERM LCD Welder 1", "Welder 1 Cargo Container", "=== Welder 1 contents ===");
 
             //Debug messages
             var lcds = GridBlocksHelper.Prefixed(GridTerminalSystem, "S.HERM LCD Airlock debug").GetLcdsPrefixed();
@@ -495,10 +496,9 @@ namespace SEScripts.Grids
                 return new AutoMove(gts);
             }
 
+            // Move components from grid to container (except from exception container list)
             public string MoveAll(List<string> components, string destinyContainerName, List<string> exceptionList)
             {
-                //====================================== Move components ==========================
-                // Move components from one container into another
                 var origin = GridBlocksHelper.WithExceptions(GTS, exceptionList).GetCargoContainersWithException();
                 if (origin.Count == 0)
                     return string.Format("Could not find any container not in exceptions.");
@@ -510,7 +510,7 @@ namespace SEScripts.Grids
                 {
                     return string.Format("Container with name {0} not found on grid.", destinyContainerName);
                 }
-                
+
                 // Get inventories of both origin and destiny containers
                 var originInventories = origin.Select(t => t.GetInventory(0)).ToList();
                 var destinyInventory = destiny[0].GetInventory(0);
@@ -535,6 +535,65 @@ namespace SEScripts.Grids
                                 itemsInOriginInventory[component].Index,
                                 destinyIndex,
                                 true);
+                    }
+                }
+
+                return debugMessage;
+            }
+
+            public string MoveToQuota(string originContainerName, string destinyContainerName, Dictionary<string, int> componentDesiredQuantities)
+            {
+                //====================================== Move components ==========================
+                // Move components from one container into another
+                var origin = GridBlocksHelper.Prefixed(GTS, originContainerName).GetCargoContainers();
+                if (origin.Count == 0)
+                    return string.Format("Could not find any container with the name {0}.", originContainerName);
+                else if (origin.Count > 1)
+                    return string.Format("Multiple containers were found with name {0}. Make sure you have only one.", originContainerName);
+
+
+                var destiny = GridBlocksHelper.Prefixed(GTS, destinyContainerName).GetCargoContainers();
+                if (destiny.Count > 1)
+                    return string.Format("Multiple containers were found with name {0}. Make sure you have only one.", destinyContainerName);
+                else if (destiny.Count == 0)
+                {
+                    return string.Format("Container with name {0} not found on grid.", destinyContainerName);
+                }
+
+                // Get inventories of both origin and destiny containers
+                var originInventory = origin[0].GetInventory(0);
+                var destinyInventory = destiny[0].GetInventory(0);
+
+                // Get items on destiny container inventory
+                var itemsInOriginInventory = CargoHelper.GetItemsInInventory(originInventory);
+                var itemsInDestinyInventory = CargoHelper.GetItemsInInventory(destinyInventory);
+
+                // Move components into destiny container
+                var debugMessage = string.Empty;
+                foreach (var component in componentDesiredQuantities)
+                {
+                    if (component.Value <= 0 || !itemsInOriginInventory.ContainsKey(component.Key))
+                        continue;
+
+                    // Calculate the quantity to move
+                    var quantityToMove = component.Value;
+                    if (itemsInDestinyInventory.ContainsKey(component.Key))
+                    {
+                        quantityToMove = component.Value - itemsInDestinyInventory[component.Key].Quantity;
+                    }
+
+                    // Move items
+                    if (quantityToMove > 0)
+                    {
+                        var a = (VRage.MyFixedPoint)quantityToMove;
+                        var destinyIndex = itemsInDestinyInventory.ContainsKey(component.Key) ? itemsInDestinyInventory[component.Key].Index :
+                                            destinyInventory.ItemCount;
+                        debugMessage += "Moving " + quantityToMove + " of " + component.Key + "from pos " + itemsInOriginInventory[component.Key].Index + " to " + destinyIndex + "\n";
+                        originInventory.TransferItemTo(destinyInventory,
+                            itemsInOriginInventory[component.Key].Index,
+                            destinyIndex,
+                            true,
+                            quantityToMove);
                     }
                 }
 

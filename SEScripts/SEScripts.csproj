@@ -62,6 +62,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Grids\MNR.cs" />
     <Compile Include="Grids\SHERM.cs" />
     <Compile Include="Helpers\CargoHelper.cs" />
     <Compile Include="Helpers\GridBlocksHelper.cs" />
