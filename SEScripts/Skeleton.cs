@@ -59,6 +59,8 @@ public abstract class Skeleton : IMyGridProgram
         set { throw new NotImplementedException(); }
     }
 
+    public Func<Sandbox.ModAPI.Ingame.IMyIntergridCommunicationSystem> IGC_ContextGetter { set => throw new NotImplementedException(); }
+
     Sandbox.ModAPI.Ingame.IMyGridTerminalSystem IMyGridProgram.GridTerminalSystem
     {
         get
