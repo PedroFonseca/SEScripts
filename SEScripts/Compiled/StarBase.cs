@@ -12,10 +12,10 @@ using VRageMath;
 
 namespace SEScripts.Grids
 {
-    public class MNRa : Skeleton
+    public class StarBasea : Skeleton
     {
         
-	// File: MNR.cs
+	// File: StarBase.cs
 
         // Timmer is used to show something different every iteration
         public static int timer = 0;
@@ -27,7 +27,9 @@ namespace SEScripts.Grids
             // Move timmer
             timer++;
 
-            ShowContainerContents.Get(GridTerminalSystem).PrintGroupContents("LCD Panel", "=== MNR 2 Contents ===", "MNR 2 Contents", timer);
+            // Show contents of ores container
+            ShowContainerContents.Get(GridTerminalSystem)
+                .PrintContentsWithSubtype("SB LCD Ores", "SB - Ores", "=== StartBase Ore / Ingot ===", timer);
         }
 
 	// File: ShowContainerContents.cs

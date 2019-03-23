@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using VRage.Game.ModAPI.Ingame;
 using VRageMath;
 
-namespace SEScripts.Grids
+namespace SEScripts.Scripts
 {
     #region Usings
 
@@ -56,10 +56,10 @@ namespace SEScripts.Grids
         {
             var debug = string.Empty;
             //AutoMove.Get(GridTerminalSystem).MoveAll(Welder1DesiredQuantities.Keys.ToList(), "S.HERM Cargo Components Container", new List<string>{ "Welder 1 Cargo Container" });
-            AutoMove.Get(GridTerminalSystem).MoveAll(ores, "S.HERM Cargo Ore / Ingot Container", new List<string>() { });
-            AutoMove.Get(GridTerminalSystem).MoveAll(new List<string>() { "Ice" }, "S.HERM Cargo Ice Container", new List<string>() { });
+            //AutoMove.Get(GridTerminalSystem).MoveAll(ores, "S.HERM Cargo Ore / Ingot Container", new List<string>() { });
+            //AutoMove.Get(GridTerminalSystem).MoveAll(new List<string>() { "Ice" }, "S.HERM Cargo Ice Container", new List<string>() { });
             // Fill welder contents
-            debug = AutoMove.Get(GridTerminalSystem).MoveToQuota("S.HERM Cargo Components Container", "Welder 1 Cargo Container", Welder1DesiredQuantities);
+            //debug = AutoMove.Get(GridTerminalSystem).MoveToQuota("S.HERM Cargo Components Container", "Welder 1 Cargo Container", Welder1DesiredQuantities);
 
             // Show contents of components container
             ShowContainerContents.Get(GridTerminalSystem).PrintContents("S.HERM LCD Components", "S.HERM Cargo Components Container", "=== S.HERM Cargo Components ===");

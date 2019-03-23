@@ -25,12 +25,12 @@ namespace SEScripts.Helpers
             }
         }
 
-        public static void ShowResultWithProgress(List<IMyTextPanel> lcds, string message, string title = "=================================")
+        public static void ShowResultWithProgress(List<IMyTextPanel> lcds, string message, string title = "=================================", int timer = 0)
         {
             if (lcds == null || lcds.Count == 0)
                 return;
 
-            message = title + "\n" + message + "\n  " + getTimmerChar();
+            message = title + "\n" + message + "\n  " + getTimmerChar(timer);
 
             var msg = new LcdMessage(message, Color.White);
             foreach (var lcd in lcds)
@@ -39,14 +39,8 @@ namespace SEScripts.Helpers
             }
         }
 
-        // Timmer is used to show something different every iteration
-        private static int timmer = 0;
-
-        private static string getTimmerChar()
+        private static string getTimmerChar(int timmer)
         {
-            // Move timmer
-            timmer++;
-
             switch (timmer)
             {
                 case 1: return "\\";

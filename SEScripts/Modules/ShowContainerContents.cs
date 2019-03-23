@@ -45,9 +45,40 @@ namespace SEScripts.Modules
             PrintResultsOnLcd(lcdName, StringifyContainerContent(containerName), title);
         }
 
-        public void PrintGroupContents(string lcdName, string title, string groupName)
+        public void PrintContentsWithSubtype(string lcdName, string containerName, string title, int timer)
         {
-            PrintResultsOnLcd(lcdName, StringifyGroupContent(groupName), title);
+            var results = StringifyContainerContent(containerName);
+
+            var containers = GridBlocksHelper.Prefixed(GTS, containerName).GetCargoContainers();
+            if (containers.Count == 0)
+                results = "Container not found.";
+
+            var items = CargoHelper.GetItemsInInventory(containers[0].GetInventory(0));
+
+            var itemsString = items.Select(item => item.ItemName + "(" + (item.IsOre ? "Ore" : "Ingot") + ")" + " - " + item.Quantity);
+
+            results = String.Join("\n", itemsString);
+
+            //public List<string> GetItemsInInventory(string containerName)
+            //{
+            //    // Get containers
+            //    var containers = GridBlocksHelper.Prefixed(GTS, containerName).GetCargoContainers();
+            //    if (containers.Count == 0)
+            //        return new List<string> { "Container not found." };
+
+            //    // Get items in inventories
+            //    var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(containers);
+
+            //    // Build a string with the items
+            //    return itemsInDestinyInventory.Values.Select(item => item.ItemName + " - " + item.Quantity).ToList();
+            //}
+
+            PrintResultsOnLcd(lcdName, results, title, timer);
+        }
+
+        public void PrintGroupContents(string lcdName, string title, string groupName, int timer)
+        {
+            PrintResultsOnLcd(lcdName, StringifyGroupContent(groupName), title, timer);
         }
 
         public void PrintContents(string lcdName, string containerName, Dictionary<string, int> componentDesiredQuantities)
@@ -129,7 +160,7 @@ namespace SEScripts.Modules
             return (int)Math.Round((decimal)quantity / desired * 100);
         }
 
-        public void PrintResultsOnLcd(string lcdName, string results, string title = "=================================")
+        public void PrintResultsOnLcd(string lcdName, string results, string title = "=================================", int timer = 0)
         {
             //Get the lcd(s)
             var lcds = GridBlocksHelper.Prefixed(GTS, lcdName).GetLcdsPrefixed();
@@ -137,7 +168,7 @@ namespace SEScripts.Modules
                 throw new Exception(string.Format("No lcd found with name starting with {0}", lcdName));
 
             // Print the message on the lcd(s)
-            LcdOutputHelper.ShowResultWithProgress(lcds, results, title);
+            LcdOutputHelper.ShowResultWithProgress(lcds, results, title, timer);
         }
     }
 

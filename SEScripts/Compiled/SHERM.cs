@@ -50,10 +50,10 @@ namespace SEScripts.Grids
         {
             var debug = string.Empty;
             //AutoMove.Get(GridTerminalSystem).MoveAll(Welder1DesiredQuantities.Keys.ToList(), "S.HERM Cargo Components Container", new List<string>{ "Welder 1 Cargo Container" });
-            AutoMove.Get(GridTerminalSystem).MoveAll(ores, "S.HERM Cargo Ore / Ingot Container", new List<string>() { });
-            AutoMove.Get(GridTerminalSystem).MoveAll(new List<string>() { "Ice" }, "S.HERM Cargo Ice Container", new List<string>() { });
+            //AutoMove.Get(GridTerminalSystem).MoveAll(ores, "S.HERM Cargo Ore / Ingot Container", new List<string>() { });
+            //AutoMove.Get(GridTerminalSystem).MoveAll(new List<string>() { "Ice" }, "S.HERM Cargo Ice Container", new List<string>() { });
             // Fill welder contents
-            debug = AutoMove.Get(GridTerminalSystem).MoveToQuota("S.HERM Cargo Components Container", "Welder 1 Cargo Container", Welder1DesiredQuantities);
+            //debug = AutoMove.Get(GridTerminalSystem).MoveToQuota("S.HERM Cargo Components Container", "Welder 1 Cargo Container", Welder1DesiredQuantities);
 
             // Show contents of components container
             ShowContainerContents.Get(GridTerminalSystem).PrintContents("S.HERM LCD Components", "S.HERM Cargo Components Container", "=== S.HERM Cargo Components ===");
@@ -98,9 +98,40 @@ namespace SEScripts.Grids
             PrintResultsOnLcd(lcdName, StringifyContainerContent(containerName), title);
         }
 
-        public void PrintGroupContents(string lcdName, string title, string groupName)
+        public void PrintContentsWithSubtype(string lcdName, string containerName, string title, int timer)
         {
-            PrintResultsOnLcd(lcdName, StringifyGroupContent(groupName), title);
+            var results = StringifyContainerContent(containerName);
+
+            var containers = GridBlocksHelper.Prefixed(GTS, containerName).GetCargoContainers();
+            if (containers.Count == 0)
+                results = "Container not found.";
+
+            var items = CargoHelper.GetItemsInInventory(containers[0].GetInventory(0));
+
+            var itemsString = items.Select(item => item.ItemName + "(" + (item.IsOre ? "Ore" : "Ingot") + ")" + " - " + item.Quantity);
+
+            results = String.Join("\n", itemsString);
+
+            //public List<string> GetItemsInInventory(string containerName)
+            //{
+            //    // Get containers
+            //    var containers = GridBlocksHelper.Prefixed(GTS, containerName).GetCargoContainers();
+            //    if (containers.Count == 0)
+            //        return new List<string> { "Container not found." };
+
+            //    // Get items in inventories
+            //    var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(containers);
+
+            //    // Build a string with the items
+            //    return itemsInDestinyInventory.Values.Select(item => item.ItemName + " - " + item.Quantity).ToList();
+            //}
+
+            PrintResultsOnLcd(lcdName, results, title, timer);
+        }
+
+        public void PrintGroupContents(string lcdName, string title, string groupName, int timer)
+        {
+            PrintResultsOnLcd(lcdName, StringifyGroupContent(groupName), title, timer);
         }
 
         public void PrintContents(string lcdName, string containerName, Dictionary<string, int> componentDesiredQuantities)
@@ -182,7 +213,7 @@ namespace SEScripts.Grids
             return (int)Math.Round((decimal)quantity / desired * 100);
         }
 
-        public void PrintResultsOnLcd(string lcdName, string results, string title = "=================================")
+        public void PrintResultsOnLcd(string lcdName, string results, string title = "=================================", int timer = 0)
         {
             //Get the lcd(s)
             var lcds = GridBlocksHelper.Prefixed(GTS, lcdName).GetLcdsPrefixed();
@@ -190,7 +221,7 @@ namespace SEScripts.Grids
                 throw new Exception(string.Format("No lcd found with name starting with {0}", lcdName));
 
             // Print the message on the lcd(s)
-            LcdOutputHelper.ShowResultWithProgress(lcds, results, title);
+            LcdOutputHelper.ShowResultWithProgress(lcds, results, title, timer);
         }
     }
 
@@ -206,7 +237,7 @@ namespace SEScripts.Grids
             var result = new Dictionary<string, ItemContent>();
             foreach (var inventory in inventoryBlocks)
             {
-                foreach (var item in GetItemsInInventory(inventory.GetInventory(inventoryIndex)))
+                foreach (var item in GetItemsInInventory(inventory.GetInventory(inventoryIndex)).ToDictionary(t => t.ItemName, t => t))
                 {
                     if (!result.ContainsKey(item.Key))
                     {
@@ -221,44 +252,27 @@ namespace SEScripts.Grids
             return result;
         }
 
-        public static Dictionary<string, ItemContentAdvanced> GetItemsInInventory(IMyInventory inventory)
+        public static IEnumerable<ItemContent> GetItemsInInventory(IMyInventory inventory)
         {
             List<MyInventoryItem> items = new List<MyInventoryItem>();
             inventory.GetItems(items);
-            var itemsDic = new Dictionary<string, ItemContentAdvanced>();
-            for (var i = 0; i < items.Count; i++)
+
+            return items.Select((t, i) => new ItemContent
             {
-                var item = items[i];
-                var name = item.Type.SubtypeId;
-                var quantity = (int)(item.Amount.RawValue / 1000000);
-                if (!itemsDic.ContainsKey(name))
-                {
-                    //Add item do return structure
-                    itemsDic.Add(name, new ItemContentAdvanced
-                    {
-                        ItemName = name,
-                        Quantity = (int)(item.Amount.RawValue / 1000000),
-                        Index = i
-                    });
-                }
-                else
-                {
-                    //There are multiple stacks of the item, so we should stack them together
-                    inventory.TransferItemTo(inventory, i, itemsDic[name].Index, true);
-                    itemsDic[name].Quantity += quantity;
-                }
-            }
-            return itemsDic;
+                Index = i,
+                ItemName = t.Type.SubtypeId,
+                Quantity = (int)t.Amount.RawValue / 1000000,
+                IsOre = t.Type.GetItemInfo().IsOre,
+                IsIngot = t.Type.GetItemInfo().IsIngot,
+            });
         }
 
         public class ItemContent
         {
             public string ItemName { get; set; }
+            public bool IsOre { get; set; }
+            public bool IsIngot { get; set; }
             public int Quantity { get; set; }
-        }
-
-        public class ItemContentAdvanced : ItemContent
-        {
             public int Index { get; set; }
         }
     }
@@ -456,12 +470,12 @@ namespace SEScripts.Grids
             }
         }
 
-        public static void ShowResultWithProgress(List<IMyTextPanel> lcds, string message, string title = "=================================")
+        public static void ShowResultWithProgress(List<IMyTextPanel> lcds, string message, string title = "=================================", int timer = 0)
         {
             if (lcds == null || lcds.Count == 0)
                 return;
 
-            message = title + "\n" + message + "\n  " + getTimmerChar();
+            message = title + "\n" + message + "\n  " + getTimmerChar(timer);
 
             var msg = new LcdMessage(message, Color.White);
             foreach (var lcd in lcds)
@@ -470,14 +484,8 @@ namespace SEScripts.Grids
             }
         }
 
-        // Timmer is used to show something different every iteration
-        private static int timmer = 0;
-
-        private static string getTimmerChar()
+        private static string getTimmerChar(int timmer)
         {
-            // Move timmer
-            timmer++;
-
             switch (timmer)
             {
                 case 1: return "\\";

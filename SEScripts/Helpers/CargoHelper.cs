@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
+using System.Collections.Generic;
 using Sandbox.ModAPI.Ingame;
 using VRage.Game.ModAPI.Ingame;
 
@@ -16,7 +17,7 @@ namespace SEScripts.Helpers
             var result = new Dictionary<string, ItemContent>();
             foreach (var inventory in inventoryBlocks)
             {
-                foreach (var item in GetItemsInInventory(inventory.GetInventory(inventoryIndex)))
+                foreach (var item in GetItemsInInventory(inventory.GetInventory(inventoryIndex)).ToDictionary(t => t.ItemName, t => t))
                 {
                     if (!result.ContainsKey(item.Key))
                     {
@@ -31,44 +32,27 @@ namespace SEScripts.Helpers
             return result;
         }
 
-        public static Dictionary<string, ItemContentAdvanced> GetItemsInInventory(IMyInventory inventory)
+        public static IEnumerable<ItemContent> GetItemsInInventory(IMyInventory inventory)
         {
             List<MyInventoryItem> items = new List<MyInventoryItem>();
             inventory.GetItems(items);
-            var itemsDic = new Dictionary<string, ItemContentAdvanced>();
-            for (var i = 0; i < items.Count; i++)
+
+            return items.Select((t, i) => new ItemContent
             {
-                var item = items[i];
-                var name = item.Type.SubtypeId;
-                var quantity = (int)(item.Amount.RawValue / 1000000);
-                if (!itemsDic.ContainsKey(name))
-                {
-                    //Add item do return structure
-                    itemsDic.Add(name, new ItemContentAdvanced
-                    {
-                        ItemName = name,
-                        Quantity = (int)(item.Amount.RawValue / 1000000),
-                        Index = i
-                    });
-                }
-                else
-                {
-                    //There are multiple stacks of the item, so we should stack them together
-                    inventory.TransferItemTo(inventory, i, itemsDic[name].Index, true);
-                    itemsDic[name].Quantity += quantity;
-                }
-            }
-            return itemsDic;
+                Index = i,
+                ItemName = t.Type.SubtypeId,
+                Quantity = (int)t.Amount.RawValue / 1000000,
+                IsOre = t.Type.GetItemInfo().IsOre,
+                IsIngot = t.Type.GetItemInfo().IsIngot,
+            });
         }
 
         public class ItemContent
         {
             public string ItemName { get; set; }
+            public bool IsOre { get; set; }
+            public bool IsIngot { get; set; }
             public int Quantity { get; set; }
-        }
-
-        public class ItemContentAdvanced : ItemContent
-        {
             public int Index { get; set; }
         }
     }

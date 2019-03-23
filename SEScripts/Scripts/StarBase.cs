@@ -17,7 +17,7 @@ namespace SEScripts.Scripts
 
     #endregion Usings
 
-    public class MNR : Skeleton
+    public class StarBase : Skeleton
     {
         #region SpaceEngineers
 
@@ -31,7 +31,9 @@ namespace SEScripts.Scripts
             // Move timmer
             timer++;
 
-            ShowContainerContents.Get(GridTerminalSystem).PrintGroupContents("LCD Panel", "=== MNR 2 Contents ===", "MNR 2 Contents", timer);
+            // Show contents of ores container
+            ShowContainerContents.Get(GridTerminalSystem)
+                .PrintContentsWithSubtype("SB LCD Ores", "SB - Ores", "=== StartBase Ore / Ingot ===", timer);
         }
 
         #endregion SpaceEngineers
