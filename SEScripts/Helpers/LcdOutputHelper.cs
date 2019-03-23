@@ -1,22 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-//Add reference to steam\SteamApps\common\SpaceEngineers\bin64\VRage.Math.dll
-//Add reference to steam\SteamApps\common\SpaceEngineers\bin64\Sandbox.Common.dll
-//Only 5 game namespaces are allowed in Programmable blocks
-//http://steamcommunity.com/sharedfiles/filedetails/?id=360966557
-//using Sandbox.ModAPI;  // NOT AVAILABLE for Programmable blocks
+﻿using System.Collections.Generic;
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
-//using Sandbox.Common.ObjectBuilders;
-using VRage;
-using VRage.Library;
-using SpaceEngineers.Game.ModAPI.Ingame;
 using VRageMath;
-using VRage.Game.ModAPI.Ingame;
 
 namespace SEScripts.Helpers
 {
+    #region SpaceEngineers
+
     public static class LcdOutputHelper
     {
         public static void ShowResult(IMyTextPanel lcd, string message)
@@ -50,7 +40,8 @@ namespace SEScripts.Helpers
         }
 
         // Timmer is used to show something different every iteration
-        static int timmer = 0;
+        private static int timmer = 0;
+
         private static string getTimmerChar()
         {
             // Move timmer
@@ -115,4 +106,6 @@ namespace SEScripts.Helpers
             }
         }
     }
+
+    #endregion SpaceEngineers
 }
