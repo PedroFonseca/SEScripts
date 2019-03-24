@@ -158,9 +158,10 @@ namespace SEScripts.Grids
             return StringifyContainerContent(inventories);
         }
 
-        public string StringifyContainerContent(List<IMyTerminalBlock> inventories)
+        public string StringifyContainerContent(List<IMyTerminalBlock> inventoryBlocks)
         {
             // Get items in inventories
+            var inventories = inventoryBlocks.SelectMany(t => InventoryHelper.GetInventories(t));
             var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(inventories);
 
             // Build a string with the items
@@ -180,7 +181,8 @@ namespace SEScripts.Grids
                 return "Container not found.";
 
             // Get items in inventories
-            var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(containers);
+            var inventories = containers.SelectMany(t => InventoryHelper.GetInventories(t));
+            var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(inventories);
 
             // Build a string with the items
             var itemsString = string.Empty;
@@ -229,15 +231,12 @@ namespace SEScripts.Grids
 
     public static class CargoHelper
     {
-        public static Dictionary<string, ItemContent> GetItemsInInventories(List<IMyTerminalBlock> inventoryBlocks, int inventoryIndex = 0)
+        public static Dictionary<string, ItemContent> GetItemsInInventories(IEnumerable<IMyInventory> inventories)
         {
-            if (inventoryBlocks.Count == 0)
-                return new Dictionary<string, ItemContent>();
-
             var result = new Dictionary<string, ItemContent>();
-            foreach (var inventory in inventoryBlocks)
+            foreach (var inventory in inventories)
             {
-                foreach (var item in GetItemsInInventory(inventory.GetInventory(inventoryIndex)).ToDictionary(t => t.ItemName, t => t))
+                foreach (var item in GetItemsInInventory(inventory).ToDictionary(t => t.ItemName, t => t))
                 {
                     if (!result.ContainsKey(item.Key))
                     {
@@ -543,6 +542,18 @@ namespace SEScripts.Grids
                 BackgroundColor = Color.Black;
                 FontSize = 1.1f;
             }
+        }
+    }
+
+
+
+	// File: InventoryHelper.cs
+
+    public class InventoryHelper
+    {
+        public static IEnumerable<IMyInventory> GetInventories(IMyTerminalBlock block)
+        {
+            return Enumerable.Range(0, block.InventoryCount).Select(t => block.GetInventory(t));
         }
     }
 

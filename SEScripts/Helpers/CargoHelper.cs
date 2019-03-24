@@ -9,19 +9,16 @@ namespace SEScripts.Helpers
 
     public static class CargoHelper
     {
-        public static Dictionary<string, ItemContent> GetItemsInInventories(List<IMyTerminalBlock> inventoryBlocks, int inventoryIndex = 0)
+        public static Dictionary<string, ItemContent> GetItemsInInventories(IEnumerable<IMyInventory> inventories)
         {
-            if (inventoryBlocks.Count == 0)
-                return new Dictionary<string, ItemContent>();
-
             var result = new Dictionary<string, ItemContent>();
-            foreach (var inventory in inventoryBlocks)
+            foreach (var inventory in inventories)
             {
-                foreach (var item in GetItemsInInventory(inventory.GetInventory(inventoryIndex)).ToDictionary(t => t.ItemName, t => t))
+                foreach (var item in GetItemsInInventory(inventory).ToDictionary(t => t.ItemName, t => t))
                 {
                     if (!result.ContainsKey(item.Key))
                     {
-                        result.Add(item.Key, item.Value as ItemContent);
+                        result.Add(item.Key, item.Value);
                     }
                     else
                     {
@@ -40,6 +37,7 @@ namespace SEScripts.Helpers
             return items.Select((t, i) => new ItemContent
             {
                 Index = i,
+                Inventory = inventory,
                 ItemName = t.Type.SubtypeId,
                 Quantity = (int)t.Amount.RawValue / 1000000,
                 IsOre = t.Type.GetItemInfo().IsOre,
@@ -49,6 +47,7 @@ namespace SEScripts.Helpers
 
         public class ItemContent
         {
+            public IMyInventory Inventory { get; set; }
             public string ItemName { get; set; }
             public bool IsOre { get; set; }
             public bool IsIngot { get; set; }

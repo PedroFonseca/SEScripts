@@ -33,7 +33,11 @@ namespace SEScripts.Scripts
 
             // Show contents of ores container
             ShowContainerContents.Get(GridTerminalSystem)
-                .PrintContentsWithSubtype("SB LCD Ores", "SB - Ores", "=== StartBase Ore / Ingot ===", timer);
+                .PrintContentsWithSubtype("SB LCD Ores 1", "SB - Ores", "=== StartBase Ore / Ingot ===", timer);
+
+            // Show contents of ores container 2
+            ShowContainerContents.Get(GridTerminalSystem)
+                .PrintContentsWithSubtype("SB LCD Ores 2", "SB Ores", "=== StartBase Ore / Ingot ===", timer);
         }
 
         #endregion SpaceEngineers

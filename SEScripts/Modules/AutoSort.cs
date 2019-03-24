@@ -45,7 +45,7 @@ namespace SEScripts.Modules
         {
             var sourceBlocks = GridBlocksHelper.Get(GTS).GetGroupBlocks(sourceGroup);
             var sourceInventories = sourceBlocks.SelectMany(t => InventoryHelper.GetInventories(t));
-            //var sourceCargo = CargoHelper.GetItemsInInventory
+            var sourceCargo = CargoHelper.GetItemsInInventories(sourceInventories);
 
             var oresBlocks = GridBlocksHelper.Get(GTS).GetGroupBlocks(oresGroup);
             var ingotsBlocks = GridBlocksHelper.Get(GTS).GetGroupBlocks(ingotsGroup);

@@ -17,6 +17,7 @@ namespace SEScripts.Modules
     using CargoHelper = Helpers.CargoHelper;
     using GridBlocksHelper = Helpers.GridBlocksHelper;
     using LcdOutputHelper = Helpers.LcdOutputHelper;
+    using InventoryHelper = Helpers.InventoryHelper;
 
     #endregion Usings
 
@@ -105,9 +106,10 @@ namespace SEScripts.Modules
             return StringifyContainerContent(inventories);
         }
 
-        public string StringifyContainerContent(List<IMyTerminalBlock> inventories)
+        public string StringifyContainerContent(List<IMyTerminalBlock> inventoryBlocks)
         {
             // Get items in inventories
+            var inventories = inventoryBlocks.SelectMany(t => InventoryHelper.GetInventories(t));
             var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(inventories);
 
             // Build a string with the items
@@ -127,7 +129,8 @@ namespace SEScripts.Modules
                 return "Container not found.";
 
             // Get items in inventories
-            var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(containers);
+            var inventories = containers.SelectMany(t => InventoryHelper.GetInventories(t));
+            var itemsInDestinyInventory = CargoHelper.GetItemsInInventories(inventories);
 
             // Build a string with the items
             var itemsString = string.Empty;
