@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
@@ -8,3 +8,7 @@
 /SEScripts/bin/Debug
 
 \.vs/SEScripts/v15/
+
+SEScripts/node_modules/
+
+SEScripts/Compiled/
