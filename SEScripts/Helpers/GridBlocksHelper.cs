@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Sandbox.ModAPI.Ingame;
 using SpaceEngineers.Game.ModAPI.Ingame;
@@ -171,6 +172,13 @@ namespace SEScripts.Helpers
             var aux = new List<IMyTerminalBlock>();
             GTS.GetBlockGroupWithName(groupName).GetBlocks(aux);
             return aux;
+        }
+
+        public IEnumerable<IMyTerminalBlock> GetAllInventoryBlocks()
+        {
+            var aux = new List<IMyTerminalBlock>();
+            GTS.GetBlocks(aux);
+            return aux.Where(t => t.HasInventory);
         }
     }
 

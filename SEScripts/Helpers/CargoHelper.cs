@@ -14,15 +14,15 @@ namespace SEScripts.Helpers
             var result = new Dictionary<string, ItemContent>();
             foreach (var inventory in inventories)
             {
-                foreach (var item in GetItemsInInventory(inventory).ToDictionary(t => t.ItemName, t => t))
+                foreach (var item in GetItemsInInventory(inventory))
                 {
                     if (!result.ContainsKey(item.Key))
                     {
-                        result.Add(item.Key, item.Value);
+                        result.Add(item.Key, item);
                     }
                     else
                     {
-                        result[item.Key].Quantity += item.Value.Quantity;
+                        result[item.Key].Quantity += item.Quantity;
                     }
                 }
             }
@@ -39,21 +39,22 @@ namespace SEScripts.Helpers
                 Index = i,
                 Inventory = inventory,
                 ItemName = t.Type.SubtypeId,
-                Quantity = (int)t.Amount.RawValue / 1000000,
+                Quantity = t.Amount.ToIntSafe(),
                 IsOre = t.Type.GetItemInfo().IsOre,
                 IsIngot = t.Type.GetItemInfo().IsIngot,
             });
         }
+    }
 
-        public class ItemContent
-        {
-            public IMyInventory Inventory { get; set; }
-            public string ItemName { get; set; }
-            public bool IsOre { get; set; }
-            public bool IsIngot { get; set; }
-            public int Quantity { get; set; }
-            public int Index { get; set; }
-        }
+    public class ItemContent
+    {
+        public IMyInventory Inventory { get; set; }
+        public string ItemName { get; set; }
+        public bool IsOre { get; set; }
+        public bool IsIngot { get; set; }
+        public int Quantity { get; set; }
+        public int Index { get; set; }
+        public string Key { get { return ItemName + (IsOre ? "1" : "0") + (IsIngot ? "1" : "0"); } }
     }
 
     #endregion SpaceEngineers

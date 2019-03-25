@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Helpers\InventoryHelper.cs" />
     <Compile Include="Modules\AutoSort.cs" />
+    <Compile Include="Modules\GridCargo.cs" />
     <Compile Include="Scripts\MNR.cs" />
     <Compile Include="Scripts\SHERM.cs" />
     <Compile Include="Helpers\CargoHelper.cs" />

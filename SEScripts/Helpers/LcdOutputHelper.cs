@@ -39,6 +39,20 @@ namespace SEScripts.Helpers
             }
         }
 
+        public static void ShowLinesWithProgress(List<IMyTextPanel> lcds, IEnumerable<string> messages, string title = "=================================", int timer = 0)
+        {
+            if (lcds == null || lcds.Count == 0)
+                return;
+
+            var text = title + "\n" + string.Join("\n", messages) + "\n  " + getTimmerChar(timer);
+
+            var msg = new LcdMessage(text, Color.White);
+            foreach (var lcd in lcds)
+            {
+                ShowMessageOnLcd(lcd, msg);
+            }
+        }
+
         private static string getTimmerChar(int timmer)
         {
             switch (timmer)
