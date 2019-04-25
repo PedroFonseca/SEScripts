@@ -87,7 +87,7 @@ public abstract class Skeleton : IMyGridProgram
         }
     }
 
-    public void Main(string argument, Sandbox.ModAPI.Ingame.UpdateType updateSource)
+    public virtual void Main(string argument, Sandbox.ModAPI.Ingame.UpdateType updateSource)
     {
         throw new NotImplementedException();
     }

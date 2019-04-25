@@ -53,7 +53,7 @@ namespace SEScripts.Helpers
             }
         }
 
-        private static string getTimmerChar(int timmer)
+        public static string getTimmerChar(int timmer)
         {
             switch (timmer)
             {
@@ -68,8 +68,7 @@ namespace SEScripts.Helpers
         {
             if (lcd == null) return;
 
-            lcd.WritePublicText(message.Text);
-            lcd.ShowPublicTextOnScreen();
+            lcd.WriteText(message.Text);
             lcd.SetValue<Color>("FontColor", message.FontColor);
             lcd.SetValue<Color>("BackgroundColor", message.BackgroundColor);
             lcd.SetValueFloat("FontSize", message.FontSize);
@@ -85,9 +84,8 @@ namespace SEScripts.Helpers
                 lcd.SetValue<Color>("FontColor", message.FontColor);
                 lcd.SetValue<Color>("BackgroundColor", message.BackgroundColor);
                 lcd.SetValueFloat("FontSize", message.FontSize);
-                lcd.WritePublicText(message.Text, true);
+                lcd.WriteText(message.Text, true);
             }
-            lcd.ShowPublicTextOnScreen();
         }
 
         public struct LcdMessage

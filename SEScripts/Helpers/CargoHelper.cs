@@ -1,14 +1,36 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Sandbox.ModAPI.Ingame;
-using VRage.Game.ModAPI.Ingame;
+using SpaceEngineers.Game.ModAPI.Ingame;
 
 namespace SEScripts.Helpers
 {
     #region SpaceEngineers
 
+
     public static class CargoHelper
     {
+        public static Dictionary<string, ItemContent> GroupItemsInInventories(IEnumerable<IMyInventory> inventories)
+        {
+            var result = new Dictionary<string, ItemContent>();
+            foreach (var inventory in inventories)
+            {
+                foreach (var item in GetItemsInInventory(inventory))
+                {
+                    if (!result.ContainsKey(item.Key))
+                    {
+                        result.Add(item.Key, item);
+                    }
+                    else
+                    {
+                        result[item.Key].Quantity += item.Quantity;
+                    }
+                }
+            }
+            return result;
+        }
+
         public static Dictionary<string, ItemContent> GetItemsInInventories(IEnumerable<IMyInventory> inventories)
         {
             var result = new Dictionary<string, ItemContent>();

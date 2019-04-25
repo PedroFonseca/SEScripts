@@ -23,6 +23,10 @@ namespace SEScripts.Modules
 
     #region SpaceEngineers
 
+    /// <summary>
+    /// This module will autosort inventories and group items together with same type
+    /// It will move items from one container into another to try and keep all items of same type together
+    /// </summary>
     public class AutoSort
     {
         private IMyGridTerminalSystem GTS { get; set; }
@@ -41,11 +45,11 @@ namespace SEScripts.Modules
             return new AutoSort(gts);
         }
 
-        public void Sort(string sourceGroup, string oresGroup, string ingotsGroup, string componentsGroup)
+        public void Sort(string groupName)
         {
-            var sourceBlocks = GridBlocksHelper.Get(GTS).GetGroupBlocks(sourceGroup);
-            var sourceInventories = sourceBlocks.SelectMany(t => InventoryHelper.GetInventories(t));
-            var sourceCargo = CargoHelper.GetItemsInInventories(sourceInventories);
+            var groupBlocks = GridBlocksHelper.Get(GTS).GetGroupBlocks(groupName);
+            var groupInventories = groupBlocks.SelectMany(t => InventoryHelper.GetInventories(t));
+            var groupCargo = CargoHelper.GetItemsInInventories(groupInventories);
 
             var oresBlocks = GridBlocksHelper.Get(GTS).GetGroupBlocks(oresGroup);
             var ingotsBlocks = GridBlocksHelper.Get(GTS).GetGroupBlocks(ingotsGroup);
