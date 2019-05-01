@@ -3,20 +3,9 @@ using Sandbox.ModAPI.Ingame;
 
 namespace SEScripts.Helpers
 {
+    #region SpaceEngineers
     public class TerminalBlockHelper
     {
-        public static IMyTerminalBlock GetBlockByName(List<IMyTerminalBlock> blocks, string blockName)
-        {
-            foreach (var block in blocks)
-            {
-                if (block.CustomName == blockName)
-                {
-                    return block;
-                }
-            }
-            return null;
-        }
-
         public static void TurnOn(IMyTerminalBlock block)
         {
             var action = block.GetActionWithName("OnOff_On");
@@ -29,4 +18,5 @@ namespace SEScripts.Helpers
             action.Apply(block);
         }
     }
+    #endregion SpaceEngineers
 }

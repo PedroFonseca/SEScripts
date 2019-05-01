@@ -1,4 +1,5 @@
 ﻿using Sandbox.ModAPI.Ingame;
+using SpaceEngineers.Game.ModAPI.Ingame;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ using VRageMath;
 
 namespace SEScripts._3rd_party
 {
-    public class WhipDiagnostics : Skeleton
+    public class Program : Skeleton
     {
         /* How to use this script:   
 1. create a programming block and load this script into it.   

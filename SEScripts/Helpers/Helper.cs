@@ -12,21 +12,22 @@ namespace SEScripts.Helpers
     {
         private IMyGridTerminalSystem GTS { get; set; }
 
-        public Helper()
-        {
-        }
+        public GridBlocksHelper Grid { get; private set; }
 
-        private Helper(IMyGridTerminalSystem gts)
+        // Timmer is used to show something different every iteration
+        private static int t = 0;
+        private readonly string[] timerChar = new string[] { "\\", "|", "/", "-" };
+        public string TimerChar { get { return timerChar[t]; } }
+
+        public Helper(IMyGridTerminalSystem gts)
         {
             GTS = gts;
+            Grid = GridBlocksHelper.Get(gts);
         }
 
-
-        public List<IMyTerminalBlock> GetGroupBlocks(string groupName)
+        public void UpdateTimer()
         {
-            var aux = new List<IMyTerminalBlock>();
-            GTS.GetBlockGroupWithName(groupName).GetBlocks(aux);
-            return aux;
+            t = t == 3 ? 0 : t + 1;
         }
     }
     #endregion SpaceEngineers
