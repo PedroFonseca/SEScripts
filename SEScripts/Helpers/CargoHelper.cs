@@ -12,6 +12,7 @@ namespace SEScripts.Helpers
 
     public static class CargoHelper
     {
+        public const string ICE = "Ice";
         //public static Dictionary<string, ItemContent> GroupItemsInInventories(IEnumerable<IMyInventory> inventories)
         //{
         //    var result = new Dictionary<string, ItemContent>();
