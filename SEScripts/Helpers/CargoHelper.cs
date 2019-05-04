@@ -13,6 +13,7 @@ namespace SEScripts.Helpers
     public static class CargoHelper
     {
         public const string ICE = "Ice";
+        public const string STONE = "Stone";
         //public static Dictionary<string, ItemContent> GroupItemsInInventories(IEnumerable<IMyInventory> inventories)
         //{
         //    var result = new Dictionary<string, ItemContent>();
@@ -75,6 +76,23 @@ namespace SEScripts.Helpers
             List<MyInventoryItem> items = new List<MyInventoryItem>();
             inventory.GetItems(items);
             return items.Where(t => t.Type.GetItemInfo().IsOre);
+        }
+
+        public static IEnumerable<MyInventoryItem> GetIngots(IMyInventory inventory)
+        {
+            List<MyInventoryItem> items = new List<MyInventoryItem>();
+            inventory.GetItems(items);
+            return items.Where(t => t.Type.GetItemInfo().IsIngot);
+        }
+
+        public static bool HasOre(IMyInventory inventory, string ore)
+        {
+            return GetOres(inventory).Any(t => t.Type.SubtypeId == ore);
+        }
+
+        public static bool HasIngot(IMyInventory inventory, string ingot)
+        {
+            return GetIngots(inventory).Any(t => t.Type.SubtypeId == ingot);
         }
     }
 
