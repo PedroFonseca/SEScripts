@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Sandbox.ModAPI.Ingame;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using VRage.Game.ModAPI.Ingame;
+using VRage;
 
 namespace SEScripts.Helpers
 {
@@ -14,6 +15,7 @@ namespace SEScripts.Helpers
     {
         public const string ICE = "Ice";
         public const string STONE = "Stone";
+        public const string SCRAP = "Scrap";
         //public static Dictionary<string, ItemContent> GroupItemsInInventories(IEnumerable<IMyInventory> inventories)
         //{
         //    var result = new Dictionary<string, ItemContent>();
@@ -65,7 +67,7 @@ namespace SEScripts.Helpers
                 Index = i,
                 Inventory = inventory,
                 ItemName = t.Type.SubtypeId,
-                Quantity = t.Amount.ToIntSafe(),
+                Quantity = t.Amount,
                 IsOre = t.Type.GetItemInfo().IsOre,
                 IsIngot = t.Type.GetItemInfo().IsIngot,
             });
@@ -94,6 +96,19 @@ namespace SEScripts.Helpers
         {
             return GetIngots(inventory).Any(t => t.Type.SubtypeId == ingot);
         }
+
+        public static void MoveAllCargo(IMyInventory source, IMyInventory destination)
+        {
+            for(int i = source.ItemCount - 1; i >= 0; i--)
+            {
+                source.TransferItemTo(destination, i, null, true);
+            }
+        }
+
+        public static decimal ConvertFromRawQuantity(MyFixedPoint quantity)
+        {
+            return (decimal)quantity.RawValue / 1000000;
+        }
     }
 
     public class ItemContent
@@ -103,9 +118,11 @@ namespace SEScripts.Helpers
         public string ItemName { get; set; }
         public bool IsOre { get; set; }
         public bool IsIngot { get; set; }
-        public int Quantity { get; set; }
+        public MyFixedPoint Quantity { get; set; }
         public int Index { get; set; }
         public string Key { get { return ItemName + (IsOre ? "1" : "0") + (IsIngot ? "1" : "0"); } }
+
+        public decimal AccurateQuantity { get { return Math.Round(CargoHelper.ConvertFromRawQuantity(Quantity), 2); } }
     }
 
     #endregion SpaceEngineers

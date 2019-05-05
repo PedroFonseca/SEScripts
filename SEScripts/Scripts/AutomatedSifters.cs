@@ -39,64 +39,82 @@ namespace SEScripts.Scripts.AutomatedSifters
         const string controlledSifters = "Automated Sifters";
         const string emptyCargoContainer = "Empty";
 
-        private static Helper helper;
+        private static Helper H { get; set; }
+        private List<IMyTerminalBlock> AllSifters { get; set; }
+        private List<IMyInventory> ContainerInventories { get; set; }
+        private IMyInventory EmptyCargoInventory { get; set; }
         public Program()
         {
             Runtime.UpdateFrequency = UpdateFrequency.Update100;
-            helper = new Helper(GridTerminalSystem);
-            Echo("Lauching script...\n");
+            H = new Helper(GridTerminalSystem);
+            Echo("Lauching script...\n If you add more sifters recompile script");
+
+            // Get needed blocks in grid
+            AllSifters = H.Grid.GetGroupBlocks(controlledSifters);
+            EmptyCargoInventory = H.Grid.GetCargoContainers(emptyCargoContainer).First().GetInventory(0);
+            ContainerInventories = H.Grid.GetBlocks().Where(t => t is IMyCargoContainer).Select(t => t.GetInventory(0)).ToList();
+
+            // Empty sifters into one cargo container before starting script (that should be handled by some inventory manager script)
+            AllSifters.Select(t => t.GetInventory(0)).Where(t => t.ItemCount > 0).ToList()
+                .ForEach(t => CargoHelper.MoveAllCargo(t, EmptyCargoInventory));
         }
 
         public void Main(string argument, UpdateType updateSource)
         {
-            helper.UpdateTimer();
+            H.UpdateTimer();
 
-            Echo("Running Ucat's automated sifters" + helper.TimerChar);
+            Echo("Running Ucat's automated sifters" + H.TimerChar);
 
-            // Get all blocks in group
-            var sifters = helper.Grid.GetGroupBlocks(controlledSifters);
-            Echo("Sifters: " + sifters.Count);
-
-            // Empty second inventory of sifters into one cargo container (that should be handled by some inventory manager script)
-            var emptyCargo = helper.Grid.GetCargoContainers(emptyCargoContainer).FirstOrDefault();
-            var inventoriesToEmpty = sifters.Select(t => t.GetInventory(1));
-            inventoriesToEmpty.ToList().ForEach(t => t.TransferItemTo(emptyCargo.GetInventory(0), 0));
-
-            // Get all inventories except the ones in the group
-            var inventories = helper.Grid.GetBlocks().Where(t => t.HasInventory && !sifters.Contains(t))
-                .SelectMany(t => InventoryHelper.GetInventories(t));
-            Echo("inventories: " + inventories.Count());
-
-            Echo("---");
-            Echo(sifters.First().GetInventory(0).GetItemAt(0).Value.Type.SubtypeId);
-            Echo(sifters.First().GetInventory(0).GetItemAt(0).Value.Type.TypeId);
-            Echo(sifters.First().GetInventory(0).GetItemAt(0).Value.Type.GetItemInfo().IsIngot ? "1" : "0");
-            Echo("---");
-
-            // Select first inventory with gravel
-            var inventory = inventories.FirstOrDefault(t => CargoHelper.HasIngot(t, CargoHelper.STONE));
-
-            if (inventory == null)
+            if(H.TimerChar != "|")
             {
-                Echo("No gravel found!");
+                // Don't run script on every execution
+                return;
             }
-            else
+
+            // Get gravel in inventories
+            var gravel = ContainerInventories.SelectMany(t => CargoHelper.GetItemsInInventory(t)).Where(t => (t.IsIngot && t.ItemName == CargoHelper.STONE)).FirstOrDefault(); ;
+            if (gravel == null)
             {
-                Echo("Emptying container: " + ((IMyTerminalBlock)inventory.Owner).CustomName);
-                var item = inventory.FindItem(MyItemType.MakeIngot(CargoHelper.STONE));
-                // Move gravel into sifters
-                if (item.HasValue)
+                Echo("All done, nothing to sift");
+                return;
+            }
+
+            var divided = (MyFixedPoint)(gravel.Quantity.RawValue > 1000 ? ((decimal)gravel.Quantity.RawValue / AllSifters.Count / 1000000) : 1);
+
+            if (divided.RawValue < 1000000)
+            {
+                Echo("\nNot worth moving " + gravel.Quantity.ToIntSafe() + " " + " gravel.\nWaiting for more...\n");
+                return;
+            }
+
+            var sifterOne = AllSifters.First();
+            var moveGravel = sifterOne.GetInventory(0).CurrentVolume.RawValue < sifterOne.GetInventory(0).MaxVolume.RawValue / 2;
+            var emptySecondInventory = sifterOne.GetInventory(1).CurrentVolume.RawValue > sifterOne.GetInventory(1).MaxVolume.RawValue / 2;
+            if (moveGravel)
+            {
+                Echo("Moving gravel into sifters: " + divided.ToIntSafe());
+            }
+
+            AllSifters.ForEach(t =>
+            {
+                // Move target quantity into refinery if not full
+                if (moveGravel)
                 {
-                    sifters.ForEach(sifter =>
-                    {
-                        sifter.GetInventory(0).TransferItemFrom(inventory, item.Value);
-                    });
+                    t.GetInventory(0).TransferItemFrom(gravel.Inventory, gravel.Item, divided);
                 }
-            }
 
-            // Turn off empty sifters and turn on sifters working
-            sifters.ForEach(t => { if (t.GetInventory(0).ItemCount > 0) TerminalBlockHelper.TurnOn(t); else TerminalBlockHelper.TurnOff(t); });
-            Echo("Sifters working: " + sifters.Select(t => t.IsWorking).Count());
+                // Empty second inventory if half full
+                if (emptySecondInventory) {
+                    Echo("Emptying");
+                    CargoHelper.MoveAllCargo(t.GetInventory(1), EmptyCargoInventory);
+                }
+
+                // Turn off sifter when it's empty, on otherwise
+                if (t.GetInventory(0).ItemCount == 0)
+                    TerminalBlockHelper.TurnOff(t);
+                else
+                    TerminalBlockHelper.TurnOn(t);
+            });
         }
 
         #endregion
