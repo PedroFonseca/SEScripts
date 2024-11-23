@@ -5,6 +5,7 @@ using Sandbox.ModAPI.Ingame;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using VRage.Game.ModAPI.Ingame;
 using VRage;
+using VRage.Game;
 
 namespace SEScripts.Helpers
 {
@@ -70,6 +71,8 @@ namespace SEScripts.Helpers
                 Quantity = t.Amount,
                 IsOre = t.Type.GetItemInfo().IsOre,
                 IsIngot = t.Type.GetItemInfo().IsIngot,
+                IsTool = t.Type.GetItemInfo().IsTool,
+                IsComponent = t.Type.GetItemInfo().IsComponent,
             });
         }
         
@@ -118,6 +121,8 @@ namespace SEScripts.Helpers
         public string ItemName { get; set; }
         public bool IsOre { get; set; }
         public bool IsIngot { get; set; }
+        public bool IsTool { get; set; }
+        public bool IsComponent { get; set; }
         public MyFixedPoint Quantity { get; set; }
         public int Index { get; set; }
         public string Key { get { return ItemName + (IsOre ? "1" : "0") + (IsIngot ? "1" : "0"); } }

@@ -1,11 +1,36 @@
 ﻿using System.Collections.Generic;
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
+using VRage.Scripting;
 using VRageMath;
 
 namespace SEScripts.Helpers
 {
     #region SpaceEngineers
+
+    public struct LcdMessage
+    {
+        public string Text { get; set; }
+        public Color FontColor { get; set; }
+        public Color BackgroundColor { get; set; }
+        public float FontSize { get; set; }
+
+        public LcdMessage(string text)
+        {
+            Text = text;
+            FontColor = Color.White;
+            BackgroundColor = Color.Black;
+            FontSize = 1.1f;
+        }
+
+        public LcdMessage(string text, Color fontColor)
+        {
+            Text = text;
+            FontColor = fontColor;
+            BackgroundColor = Color.Black;
+            FontSize = 1.1f;
+        }
+    }
 
     public static class LcdOutputHelper
     {
@@ -64,11 +89,11 @@ namespace SEScripts.Helpers
             }
         }
 
-        public static void ShowMessageOnLcd(IMyTextPanel lcd, LcdMessage message)
+        public static void ShowMessageOnLcd(IMyTextPanel lcd, LcdMessage message, bool append = false)
         {
             if (lcd == null) return;
 
-            lcd.WriteText(message.Text);
+            lcd.WriteText(message.Text, append);
             lcd.SetValue<Color>("FontColor", message.FontColor);
             lcd.SetValue<Color>("BackgroundColor", message.BackgroundColor);
             lcd.SetValueFloat("FontSize", message.FontSize);
@@ -84,31 +109,7 @@ namespace SEScripts.Helpers
                 lcd.SetValue<Color>("FontColor", message.FontColor);
                 lcd.SetValue<Color>("BackgroundColor", message.BackgroundColor);
                 lcd.SetValueFloat("FontSize", message.FontSize);
-                lcd.WriteText(message.Text, true);
-            }
-        }
-
-        public struct LcdMessage
-        {
-            public string Text { get; set; }
-            public Color FontColor { get; set; }
-            public Color BackgroundColor { get; set; }
-            public float FontSize { get; set; }
-
-            public LcdMessage(string text)
-            {
-                Text = text;
-                FontColor = Color.White;
-                BackgroundColor = Color.Black;
-                FontSize = 1.1f;
-            }
-
-            public LcdMessage(string text, Color fontColor)
-            {
-                Text = text;
-                FontColor = fontColor;
-                BackgroundColor = Color.Black;
-                FontSize = 1.1f;
+                lcd.WriteText(message.Text+ '\n', true);
             }
         }
     }
