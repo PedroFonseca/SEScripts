@@ -67,12 +67,15 @@
     <Compile Include="3rd party\WhipDiagnostics.cs" />
     <Compile Include="3rd party\WhipLcd.cs" />
     <Compile Include="3rd party\WhipsAutoDoor.cs" />
+    <Compile Include="Helpers\ComponentHelper.cs" />
     <Compile Include="Helpers\Helper.cs" />
     <Compile Include="Helpers\InventoryHelper.cs" />
+    <Compile Include="Modules\AutoBuildComponents.cs" />
     <Compile Include="Modules\AutoSort.cs" />
     <Compile Include="Modules\GridCargo.cs" />
     <Compile Include="Scripts\AutomatedSifters.cs" />
     <Compile Include="Scripts\AutomatedRefineries.cs" />
+    <Compile Include="Scripts\MiningShip.cs" />
     <Compile Include="Scripts\MNR.cs" />
     <Compile Include="Scripts\SHERM.cs" />
     <Compile Include="Helpers\CargoHelper.cs" />
